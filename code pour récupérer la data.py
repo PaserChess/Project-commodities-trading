@@ -1,7 +1,7 @@
 import yfinance as yf
 import pandas as pd
 
-# 1. Configuration de l'Univers final stabilisé
+# Define the universe (20 assets)
 anchor = ["HG=F"]
 proxies = ["CPER", "JJCTF", "PICK", "XME"]
 equities = [
@@ -12,13 +12,13 @@ equities = [
 
 full_universe = anchor + proxies + equities
 
-# 2. Paramètres de dates
+# Data parameters
 start_date = "2020-01-01"
 end_date = "2026-01-01"
+output_file = "copper_project_data.csv"
 
-print(f"Téléchargement de {len(full_universe)} actifs du {start_date} au {end_date}...")
-
-# 3. Téléchargement des données
+# Download market data
+print(f"Downloading data for {len(full_universe)} tickers...")
 raw_data = yf.download(
     full_universe, 
     start=start_date, 
@@ -26,23 +26,17 @@ raw_data = yf.download(
     auto_adjust=True
 )
 
-# 4. Extraction des prix (Close)
+# Extract Adjusted Close prices
 prices = raw_data['Close']
 
-# 5. Nettoyage des données
-# On remplit les trous (jours fériés différents) par la méthode "Forward Fill"
-# Puis on supprime les lignes totalement vides (week-ends)
+# Handle missing values (forward fill for asynchronous market holidays)
+# then drop remaining rows that are entirely empty (weekends)
 prices = prices.ffill().dropna(how='all')
 
-# 6. Exportation en CSV
-file_name = "copper_universe_data_2020_2026.csv"
-prices.to_csv(file_name)
+# Export to CSV
+prices.to_csv(output_file)
 
-print("-" * 30)
-print(f"Succès ! Fichier enregistré sous : {file_name}")
-print(f"Nombre de lignes : {len(prices)}")
-print(f"Nombre de colonnes : {len(prices.columns)}")
-print("-" * 30)
-
-# Petit aperçu pour vérifier
-print(prices.head())
+print("-" * 40)
+print(f"Export Complete: {output_file}")
+print(f"Dimensions: {prices.shape[0]} rows x {prices.shape[1]} columns")
+print("-" * 40)
